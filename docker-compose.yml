@@ -1,0 +1,32 @@
+version: '3'
+services:
+  elasticsearch:
+    image: elasticsearch:latest
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - ./elasticsearch/conf:/etc/elasticsearch
+      - ./elasticsearch/data:/usr/share/elasticsearch/data
+    hostname: elasticsearch
+  kibana:
+    image: kibana:latest
+    ports:
+      - "5601:5601"
+    volumes:
+      - ./kibana/conf:/etc/kibana
+    hostname: kibana
+    # 依赖启动服务，等elasticsearch启动后再启动
+    depends_on:
+      - elasticsearch
+    
+  logstash:
+    image: logstash:latest
+    volumes:
+      - ./logstash/conf:/etc/logstash
+      - /var/log/nginx:/var/log/dockertest
+    hostname: logstash
+    # 依赖启动服务，等elasticsearch启动后再启动
+    depends_on:
+      - elasticsearch
+    command: logstash -f /etc/logstash/conf.d/nginx_access.conf
